@@ -32,6 +32,7 @@ export type ParseMedicalDocumentInput = {
   filename: string
   mimeType: string
   context?: string
+  profile?: string
 }
 
 export type ParseMedicalDocumentResult = {
@@ -123,13 +124,16 @@ function buildUserPrompt(input: ParseMedicalDocumentInput) {
   const contextBlock = input.context?.trim()
     ? `Additional caregiver context:\n${input.context.trim()}\n\n`
     : ''
+  const profileBlock = input.profile?.trim()
+    ? `Family profile section: ${input.profile.trim()}\n`
+    : ''
 
   return [
     'Parse the uploaded medical file into the provided JSON schema.',
     'Summaries must stay descriptive and non-diagnostic.',
     'For lab reports, capture the most important analytes and any explicitly flagged values.',
     'For visit notes or imaging reports, capture findings, instructions, medications mentioned, and next steps only if written in the document.',
-    `${contextBlock}Document filename: ${input.filename}`,
+    `${contextBlock}${profileBlock}Document filename: ${input.filename}`,
     `Document MIME type: ${input.mimeType}`,
   ].join('\n')
 }

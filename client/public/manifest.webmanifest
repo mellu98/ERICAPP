@@ -1,0 +1,28 @@
+{
+  "name": "ERICAPP",
+  "short_name": "ERICAPP",
+  "description": "PWA familiare con sezioni separate per Erica, Lina, Antonio e Keyssy.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#efe7da",
+  "theme_color": "#1f2430",
+  "lang": "it",
+  "icons": [
+    {
+      "src": "/pwa-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,15 +1,25 @@
 # ERICAPP
 
-Prototipo di una family wellness app pensata per aiutare un caregiver a monitorare il benessere delle persone care con check-in, trend e coordinamento familiare.
+Prototipo di una family wellness PWA pensata per aiutare un caregiver a monitorare il benessere delle persone care con check-in, trend, documenti, chat separate e coordinamento familiare.
 
 ## Cosa c'e dentro
 
 - `client/`: prototipo frontend in React + Vite.
+- `client/public/manifest.webmanifest` e `client/public/sw.js`: base PWA installabile.
 - `server/`: backend TypeScript per parsing di PDF e immagini con OpenAI.
 - `docs/architecture.md`: direzione tecnica, MVP e roadmap.
 - `docs/safety.md`: guardrail di safety, privacy ed escalation.
 - `docs/agents.md`: definizione dei 3 assistenti virtuali.
 - `docs/document-parser.md`: pipeline del parser multimodale.
+
+## Le 4 sezioni persona
+
+- `Erica`
+- `Lina`
+- `Antonio`
+- `Keyssy`
+
+Ognuno ha i propri esami, documenti, chat e assistente AI personale.
 
 ## I 3 assistenti
 

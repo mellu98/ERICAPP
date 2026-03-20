@@ -214,6 +214,7 @@
 }
 
 .assistants-card,
+.records-card,
 .privacy-card,
 .safety-card {
   grid-column: 1 / -1;
@@ -327,6 +328,13 @@
   gap: 12px;
 }
 
+.workspace-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
 .metric-card {
   padding: 16px;
   border-radius: 20px;
@@ -342,6 +350,29 @@
   margin-top: 8px;
   color: var(--ink);
   font-size: 1.2rem;
+}
+
+.workspace-card {
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+}
+
+.workspace-card span,
+.workspace-card strong,
+.workspace-card p {
+  display: block;
+}
+
+.workspace-card strong {
+  margin-top: 8px;
+  color: var(--ink);
+  font-size: 1.15rem;
+}
+
+.workspace-card p {
+  margin-top: 8px;
+  color: var(--muted);
 }
 
 .note-block,
@@ -364,6 +395,83 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
+}
+
+.records-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.records-panel {
+  padding: 20px;
+  border-radius: 24px;
+  border: 1px solid rgba(31, 36, 48, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 241, 229, 0.82));
+}
+
+.document-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.document-item {
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(31, 36, 48, 0.08);
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.document-item strong,
+.document-item p,
+.document-item span {
+  display: block;
+}
+
+.document-item p,
+.document-item span {
+  color: var(--muted);
+}
+
+.document-item p {
+  margin-top: 4px;
+}
+
+.document-item span {
+  margin-top: 8px;
+  font-size: 0.92rem;
+}
+
+.chat-panel {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(31, 36, 48, 0.08);
+  background: rgba(217, 240, 234, 0.36);
+}
+
+.chat-tag {
+  display: inline-flex;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(31, 36, 48, 0.9);
+  color: var(--paper);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.chat-status {
+  color: var(--ink);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.chat-next {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(31, 36, 48, 0.08);
 }
 
 .assistant-card {
@@ -482,6 +590,7 @@
   }
 
   .assistant-grid,
+  .records-grid,
   .pillar-list {
     grid-template-columns: 1fr;
   }
@@ -513,6 +622,10 @@
   }
 
   .metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-grid {
     grid-template-columns: 1fr;
   }
 }
