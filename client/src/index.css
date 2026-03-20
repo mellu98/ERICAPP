@@ -1,19 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('./components/platform/platform.css');
 
 :root {
-  --canvas: #efe7da;
-  --paper: #fffcf6;
-  --paper-deep: #f8f1e5;
-  --ink: #1f2430;
-  --muted: #5c6470;
-  --border: rgba(31, 36, 48, 0.1);
-  --teal-soft: #d9f0ea;
-  --teal-strong: #2d7d73;
-  --teal-deep: #245e58;
-  --amber-soft: #f8e4cb;
-  --amber-strong: #c97a1b;
-  --rose-soft: #f7d9d5;
-  --rose-strong: #b94a48;
+  --canvas: #ebe4d8;
+  --paper: #f8f5ee;
+  --paper-deep: #ece3d2;
+  --ink: #111827;
+  --muted: #5b6472;
+  --border: rgba(17, 24, 39, 0.12);
+  --teal-soft: #d8ebe4;
+  --teal-strong: #1f6d62;
+  --teal-deep: #184e48;
+  --amber-soft: #f3e0be;
+  --amber-strong: #a96210;
+  --rose-soft: #f2d5d2;
+  --rose-strong: #9c4741;
+  --shadow: 0 24px 60px rgba(16, 24, 40, 0.12);
+  --shadow-soft: 0 12px 24px rgba(16, 24, 40, 0.08);
   --sans: 'Manrope', 'Segoe UI', sans-serif;
   --heading: 'Fraunces', Georgia, serif;
 
@@ -40,19 +43,38 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100svh;
+  color: var(--ink);
   background:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.65), transparent 35%),
-    linear-gradient(180deg, #efe7da 0%, #e8e0d3 100%);
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.6), transparent 34%),
+    radial-gradient(circle at 85% 12%, rgba(31, 109, 98, 0.12), transparent 28%),
+    linear-gradient(180deg, #ece4d8 0%, #e4dac9 100%);
 }
 
 body,
 button,
-a {
+a,
+input,
+textarea,
+select {
   font-family: var(--sans);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.2;
+  background-image:
+    linear-gradient(rgba(17, 24, 39, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 24, 39, 0.03) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 85%);
 }
 
 #root {
   min-height: 100svh;
+  isolation: isolate;
 }
 
 h1,
@@ -72,8 +94,8 @@ h3 {
 }
 
 h1 {
-  font-size: clamp(3rem, 7vw, 5.5rem);
-  letter-spacing: -0.06em;
+  font-size: clamp(3rem, 7vw, 5.8rem);
+  letter-spacing: -0.07em;
 }
 
 h2 {
@@ -82,7 +104,7 @@ h2 {
 }
 
 h3 {
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   letter-spacing: -0.03em;
 }
 
@@ -92,4 +114,9 @@ a {
 
 button {
   cursor: pointer;
+}
+
+.platform-shell__stack {
+  display: grid;
+  gap: 18px;
 }
