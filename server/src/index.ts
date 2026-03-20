@@ -1,12 +1,36 @@
-import Fastify from 'fastify'
+import cors from '@fastify/cors'
 import multipart from '@fastify/multipart'
+import Fastify, { type FastifyRequest } from 'fastify'
+import { z } from 'zod'
+import {
+  conversationMessageSchema,
+  documentContextSchema,
+} from './lib/assistantSchemas.js'
+import {
+  generateProfileChatReply,
+  generateSituationReport,
+} from './lib/familyAssistant.js'
 import {
   isSupportedMedicalDocument,
   parseMedicalDocument,
 } from './lib/documentParser.js'
 
+const profileNameSchema = z.enum(['Erica', 'Lina', 'Antonio', 'Keyssy'])
+const historySchema = z.array(conversationMessageSchema)
+const documentLibrarySchema = z.array(documentContextSchema)
+
+const reportRequestSchema = z.object({
+  profile: profileNameSchema,
+  history: historySchema.default([]),
+  documents: documentLibrarySchema.default([]),
+})
+
 const app = Fastify({
   logger: true,
+})
+
+await app.register(cors, {
+  origin: buildCorsOrigin(),
 })
 
 await app.register(multipart, {
@@ -22,7 +46,7 @@ app.get('/', async (_request, reply) => {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ERICAPP Parser</title>
+    <title>ERICAPP AI Backend</title>
     <style>
       :root {
         color-scheme: dark;
@@ -38,14 +62,14 @@ app.get('/', async (_request, reply) => {
         padding: 24px;
       }
       main {
-        width: min(780px, 100%);
+        width: min(860px, 100%);
         background: #161b22;
         border: 1px solid #2f3845;
-        border-radius: 20px;
+        border-radius: 22px;
         padding: 24px;
         box-shadow: 0 24px 50px rgba(0, 0, 0, 0.28);
       }
-      h1, h2, p {
+      h1, h2, p, ul {
         margin-top: 0;
       }
       .muted {
@@ -101,32 +125,36 @@ app.get('/', async (_request, reply) => {
   </head>
   <body>
     <main>
-      <span class="pill">ERICAPP parser online</span>
-      <h1>Parser PDF e immagini</h1>
+      <span class="pill">ERICAPP AI backend online</span>
+      <h1>Chat, report e parser documentale</h1>
       <p class="muted">
-        Questo servizio accetta PDF e immagini di referti/visite, li invia al parser
-        multimodale e restituisce JSON strutturato.
+        Questo servizio alimenta le 4 chat persona della PWA, riceve documenti in
+        chat, usa GPT-5.4 per generare risposta e costruisce un report dettagliato
+        per ciascun profilo.
       </p>
 
       <div class="grid">
         <div>
           <h2>Endpoint utili</h2>
-          <p><a href="/health">GET /health</a> per il controllo rapido.</p>
-          <p><code>POST /api/parse-medical-document</code> per il parsing vero.</p>
+          <ul>
+            <li><a href="/health">GET /health</a></li>
+            <li><code>POST /api/parse-medical-document</code></li>
+            <li><code>POST /api/profile-chat</code></li>
+            <li><code>POST /api/profile-report</code></li>
+          </ul>
         </div>
 
         <div>
-          <h2>Prova dal browser</h2>
+          <h2>Test parser dal browser</h2>
           <form action="/api/parse-medical-document" method="post" enctype="multipart/form-data">
             <select name="profile">
-              <option value="">Seleziona sezione persona</option>
               <option value="Erica">Erica</option>
               <option value="Lina">Lina</option>
               <option value="Antonio">Antonio</option>
               <option value="Keyssy">Keyssy</option>
             </select>
             <input type="file" name="file" accept=".pdf,image/jpeg,image/png,image/webp" required />
-            <textarea name="context" placeholder="Contesto opzionale: esame del sangue di controllo, referto visita, immagine lab ecc."></textarea>
+            <textarea name="context" placeholder="Contesto opzionale: visita di controllo, emocromo, referto immagine..."></textarea>
             <button type="submit">Invia al parser</button>
           </form>
         </div>
@@ -138,32 +166,31 @@ app.get('/', async (_request, reply) => {
 
 app.get('/health', async () => ({
   ok: true,
-  service: 'ericapp-document-parser',
+  service: 'ericapp-family-assistant',
 }))
 
 app.post('/api/parse-medical-document', async (request, reply) => {
-  const part = await request.file()
+  const payload = await readMultipartPayload(request)
 
-  if (!part) {
+  if (!payload.file) {
     return reply.code(400).send({
       error: 'A PDF or image file is required.',
     })
   }
 
-  if (!isSupportedMedicalDocument(part.mimetype)) {
+  if (!isSupportedMedicalDocument(payload.file.mimeType)) {
     return reply.code(415).send({
-      error: `Unsupported file type: ${part.mimetype}`,
+      error: `Unsupported file type: ${payload.file.mimeType}`,
     })
   }
 
-  const context = readMultipartField(part.fields, 'context')
-  const profile = readMultipartField(part.fields, 'profile')
-  const bytes = await part.toBuffer()
+  const profile = profileNameSchema.optional().parse(payload.fields.profile)
+  const context = payload.fields.context
 
   const result = await parseMedicalDocument({
-    bytes,
-    filename: part.filename,
-    mimeType: part.mimetype,
+    bytes: payload.file.bytes,
+    filename: payload.file.filename,
+    mimeType: payload.file.mimeType,
     context,
     profile,
   })
@@ -171,9 +198,9 @@ app.post('/api/parse-medical-document', async (request, reply) => {
   return reply.send({
     ok: true,
     file: {
-      filename: part.filename,
-      mimeType: part.mimetype,
-      size: bytes.byteLength,
+      filename: payload.file.filename,
+      mimeType: payload.file.mimeType,
+      size: payload.file.bytes.byteLength,
     },
     parser: {
       model: result.model,
@@ -182,6 +209,98 @@ app.post('/api/parse-medical-document', async (request, reply) => {
     },
     profile: profile ?? null,
     document: result.document,
+  })
+})
+
+app.post('/api/profile-chat', async (request, reply) => {
+  const payload = await readMultipartPayload(request)
+  const profile = profileNameSchema.parse(payload.fields.profile)
+  const message = payload.fields.message?.trim()
+
+  if (!message) {
+    return reply.code(400).send({
+      error: 'A chat message is required.',
+    })
+  }
+
+  const history = parseJsonField(payload.fields.history, historySchema, [])
+  const documents = parseJsonField(
+    payload.fields.documents,
+    documentLibrarySchema,
+    [],
+  )
+
+  let attachment: null | {
+    filename: string
+    mimeType: string
+    size: number
+    parsedDocument: Awaited<ReturnType<typeof parseMedicalDocument>>['document']
+    snapshot: z.infer<typeof documentContextSchema>
+  } = null
+
+  if (payload.file) {
+    if (!isSupportedMedicalDocument(payload.file.mimeType)) {
+      return reply.code(415).send({
+        error: `Unsupported file type: ${payload.file.mimeType}`,
+      })
+    }
+
+    const parsedFile = await parseMedicalDocument({
+      bytes: payload.file.bytes,
+      filename: payload.file.filename,
+      mimeType: payload.file.mimeType,
+      context: message,
+      profile,
+    })
+
+    attachment = {
+      filename: payload.file.filename,
+      mimeType: payload.file.mimeType,
+      size: payload.file.bytes.byteLength,
+      parsedDocument: parsedFile.document,
+      snapshot: createDocumentSnapshot(
+        payload.file.filename,
+        payload.file.mimeType,
+        parsedFile.document,
+      ),
+    }
+  }
+
+  const result = await generateProfileChatReply({
+    profile,
+    message,
+    history,
+    documents: attachment ? [...documents, attachment.snapshot] : documents,
+    uploadedDocument: attachment?.snapshot,
+  })
+
+  return reply.send({
+    ok: true,
+    profile,
+    assistant: {
+      ...result.reply,
+      model: result.model,
+      responseId: result.responseId,
+    },
+    attachment,
+  })
+})
+
+app.post('/api/profile-report', async (request, reply) => {
+  const payload = reportRequestSchema.parse(request.body ?? {})
+  const result = await generateSituationReport(payload)
+
+  return reply.send({
+    ok: true,
+    profile: payload.profile,
+    report: {
+      ...result.report,
+      generatedAt: new Date().toISOString(),
+      messageCount: payload.history.length,
+      documentCount: payload.documents.length,
+      model: result.model,
+      responseId: result.responseId,
+    },
   })
 })
 
@@ -202,19 +321,78 @@ await app.listen({
   port,
 })
 
-function readMultipartField(
-  fields: Record<string, unknown> | undefined,
-  fieldName: string,
+function createDocumentSnapshot(
+  filename: string,
+  mimeType: string,
+  document: Awaited<ReturnType<typeof parseMedicalDocument>>['document'],
 ) {
-  const field = fields?.[fieldName]
+  return documentContextSchema.parse({
+    filename,
+    mimeType,
+    uploadedAt: new Date().toISOString(),
+    documentType: document.documentType,
+    summary: document.summary.plainLanguage,
+    keyPoints: document.summary.keyPoints,
+    redFlags: document.redFlagsMentioned.map((item) => item.item),
+    requiresHumanReview: true,
+  })
+}
 
-  if (!field || Array.isArray(field) || typeof field !== 'object') {
-    return undefined
+function buildCorsOrigin() {
+  const configuredOrigins = process.env.CORS_ORIGIN
+    ?.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+
+  if (!configuredOrigins || configuredOrigins.length === 0) {
+    return true
   }
 
-  if (!('value' in field)) {
-    return undefined
+  return configuredOrigins
+}
+
+async function readMultipartPayload(request: FastifyRequest) {
+  const fields: Record<string, string> = {}
+  let file:
+    | {
+        bytes: Buffer
+        filename: string
+        mimeType: string
+      }
+    | undefined
+
+  for await (const part of request.parts()) {
+    if (part.type === 'file') {
+      if (file) {
+        throw new Error('Only one file per request is supported.')
+      }
+
+      file = {
+        bytes: await part.toBuffer(),
+        filename: part.filename,
+        mimeType: part.mimetype,
+      }
+      continue
+    }
+
+    fields[part.fieldname] =
+      typeof part.value === 'string' ? part.value : String(part.value)
   }
 
-  return typeof field.value === 'string' ? field.value : undefined
+  return {
+    fields,
+    file,
+  }
+}
+
+function parseJsonField<T>(
+  value: string | undefined,
+  schema: z.ZodType<T>,
+  fallback: T,
+) {
+  if (!value?.trim()) {
+    return fallback
+  }
+
+  return schema.parse(JSON.parse(value))
 }

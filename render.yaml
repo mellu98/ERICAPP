@@ -12,6 +12,10 @@ services:
         sync: false
       - key: OPENAI_MEDICAL_PARSER_MODEL
         value: gpt-5.4
+      - key: OPENAI_FAMILY_ASSISTANT_MODEL
+        value: gpt-5.4
+      - key: CORS_ORIGIN
+        value: http://localhost:5173,https://ericapp-web.onrender.com
       - key: PORT
         value: 10000
 
@@ -21,3 +25,6 @@ services:
     rootDir: client
     buildCommand: npm install && npm run build
     staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://ericapp-parser.onrender.com
