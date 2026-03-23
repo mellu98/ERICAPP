@@ -38,28 +38,31 @@ export function Topbar({
   const isOffline = syncState === 'offline'
 
   return (
-    <header className="flex items-center justify-between h-12 px-4 border-b border-white/[0.08] bg-[rgba(7,7,17,0.95)] backdrop-blur-xl shrink-0 z-20">
+    <header
+      className="flex items-center justify-between h-14 px-4 border-b border-white/[0.08] bg-[rgba(7,7,17,0.95)] backdrop-blur-xl shrink-0 z-20"
+      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+    >
       {/* Left: identity */}
       <div className="flex items-center gap-3">
         {/* Logo — visible only on mobile (desktop shows it in sidebar) */}
-        <div className="md:hidden w-8 h-8 rounded-lg bg-gradient-to-br from-[#00d4aa] to-[#007a62] flex items-center justify-center text-[#070711] font-black text-[11px] shadow-md shadow-[rgba(0,212,170,0.2)] shrink-0">
+        <div className="md:hidden w-10 h-10 rounded-xl bg-gradient-to-br from-[#00d4aa] to-[#007a62] flex items-center justify-center text-[#070711] font-black text-[13px] shadow-md shadow-[rgba(0,212,170,0.2)] shrink-0">
           ER
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <span className={cn('w-2 h-2 rounded-full shrink-0', toneDotStyle[activeSectionTone])} />
-            <p className="font-bold text-sm text-[#eae8f2] leading-none">{activeSectionName}</p>
+            <span className={cn('w-2.5 h-2.5 rounded-full shrink-0', toneDotStyle[activeSectionTone])} />
+            <p className="font-bold text-base text-[#eae8f2] leading-none">{activeSectionName}</p>
           </div>
-          <p className="text-[11px] text-white/30 mt-0.5 hidden sm:block">{connectionLabel}</p>
+          <p className="text-[12px] text-white/30 mt-1 hidden sm:block">{connectionLabel}</p>
         </div>
       </div>
 
       {/* Right: status + actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         {/* Sync pill */}
         <span
           className={cn(
-            'hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors',
+            'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-colors',
             isSyncing
               ? 'bg-[rgba(245,166,35,0.1)] text-[#f5a623] border-[rgba(245,166,35,0.2)]'
               : isOffline
@@ -70,7 +73,7 @@ export function Topbar({
         >
           <span
             className={cn(
-              'w-1.5 h-1.5 rounded-full',
+              'w-2 h-2 rounded-full',
               isSyncing ? 'bg-[#f5a623] animate-pulse' : isOffline ? 'bg-[#f43f5e]' : 'bg-[#00d4aa]',
             )}
           />
@@ -83,9 +86,9 @@ export function Topbar({
           onClick={onSecondaryAction}
           disabled={!onSecondaryAction}
           title={secondaryActionLabel}
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-white/40 hover:text-white/75 hover:bg-white/[0.06] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-white/40 hover:text-white/75 hover:bg-white/[0.06] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="w-5 h-5" />
         </button>
 
         {/* Upload */}
@@ -93,9 +96,9 @@ export function Topbar({
           type="button"
           onClick={onPrimaryAction}
           disabled={!onPrimaryAction}
-          className="flex items-center gap-1.5 px-3 h-8 rounded-lg bg-[#00d4aa] text-[#070711] text-xs font-bold hover:bg-[#00c49e] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-[rgba(0,212,170,0.25)]"
+          className="flex items-center gap-2 px-4 h-10 rounded-xl bg-[#00d4aa] text-[#070711] text-sm font-bold hover:bg-[#00c49e] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-[rgba(0,212,170,0.25)]"
         >
-          <Paperclip className="w-3.5 h-3.5" />
+          <Paperclip className="w-4.5 h-4.5" />
           <span className="hidden sm:block">{primaryActionLabel}</span>
         </button>
       </div>
