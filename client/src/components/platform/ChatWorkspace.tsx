@@ -108,6 +108,7 @@ export function ChatWorkspace({
     const text = draft.trim() || 'Puoi analizzare il documento allegato in modo semplice?'
     if (!draft.trim() && !selectedFile) return
 
+    const savedDraft = draft
     const file = selectedFile
     setDraft('')
     setSelectedFile(null)
@@ -116,7 +117,7 @@ export function ChatWorkspace({
     try {
       await onSendMessage({ text, file })
     } catch {
-      setDraft(draft)
+      setDraft(savedDraft)
       setSelectedFile(file)
     }
   }
