@@ -1,4 +1,5 @@
-import type { PlatformSection } from './PlatformShell'
+import { cn } from '../../lib/utils'
+import type { PlatformSection, PlatformSectionTone } from './PlatformShell'
 
 export type SectionRailProps = {
   sections: PlatformSection[]
@@ -6,22 +7,34 @@ export type SectionRailProps = {
   onSectionChange: (sectionId: string) => void
 }
 
-export function SectionRail({
-  sections,
-  activeSectionId,
-  onSectionChange,
-}: SectionRailProps) {
+const toneDotClass: Record<PlatformSectionTone, string> = {
+  teal: 'bg-[#00d4aa]',
+  amber: 'bg-[#f5a623]',
+  rose: 'bg-[#f43f5e]',
+  slate: 'bg-white/30',
+}
+
+export function SectionRail({ sections, activeSectionId, onSectionChange }: SectionRailProps) {
   return (
-    <nav className="platform-rail" aria-label="Sezioni persone">
-      <div className="platform-rail__header">
-        <p className="platform-rail__eyebrow">Persone</p>
-        <h2 className="platform-rail__title">4 spazi separati</h2>
-        <p className="platform-rail__copy">
-          Ogni persona ha un workspace proprio con documenti, chat e assistente AI.
-        </p>
+    <nav className="flex flex-col h-full py-4" aria-label="Sezioni persone">
+      {/* Brand */}
+      <div className="flex items-center gap-3 px-4 pb-6">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00d4aa] to-[#007a62] flex items-center justify-center text-[#070711] font-black text-xs tracking-wide shrink-0 shadow-lg shadow-[rgba(0,212,170,0.2)]">
+          ER
+        </div>
+        <div>
+          <p className="font-bold text-sm text-[#eae8f2] leading-none">ERICAPP</p>
+          <p className="text-[11px] text-white/35 mt-0.5">Monitoraggio famiglia</p>
+        </div>
       </div>
 
-      <div className="platform-rail__list" role="list">
+      {/* Section label */}
+      <p className="px-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-white/25">
+        Persone
+      </p>
+
+      {/* Profile list */}
+      <div className="flex flex-col gap-0.5 px-2 flex-1 overflow-y-auto">
         {sections.map((section) => {
           const isActive = section.id === activeSectionId
 
@@ -29,31 +42,56 @@ export function SectionRail({
             <button
               key={section.id}
               type="button"
-              className={`platform-rail__item ${isActive ? 'is-active' : ''}`}
               onClick={() => onSectionChange(section.id)}
               aria-current={isActive ? 'page' : undefined}
+              className={cn(
+                'flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-left transition-all duration-150 group',
+                isActive
+                  ? 'bg-[rgba(0,212,170,0.08)] border border-[rgba(0,212,170,0.2)]'
+                  : 'hover:bg-white/[0.04] border border-transparent',
+              )}
             >
-              <span className="platform-rail__tone" data-tone={section.tone} />
-              <span className="platform-rail__content">
-                <strong>{section.name}</strong>
-                <span>{section.subtitle}</span>
+              <span
+                className={cn(
+                  'w-2 h-2 rounded-full shrink-0 transition-all',
+                  toneDotClass[section.tone],
+                  !isActive && 'opacity-60',
+                )}
+              />
+              <span className="flex-1 min-w-0">
+                <span
+                  className={cn(
+                    'block text-sm font-semibold truncate transition-colors',
+                    isActive ? 'text-[#eae8f2]' : 'text-white/60 group-hover:text-white/85',
+                  )}
+                >
+                  {section.name}
+                </span>
+                <span className="block text-[11px] text-white/30 truncate mt-0.5 leading-none">
+                  {section.subtitle}
+                </span>
               </span>
-              <span className="platform-rail__meta">
-                <span>{section.status}</span>
-                <small>{section.metric}</small>
-                {section.unreadCount ? (
-                  <strong>{section.unreadCount}</strong>
-                ) : null}
-              </span>
+              {section.unreadCount ? (
+                <span className="w-4 h-4 rounded-full bg-[#00d4aa] text-[#070711] text-[9px] font-black flex items-center justify-center shrink-0">
+                  {section.unreadCount}
+                </span>
+              ) : (
+                <span className="text-[10px] text-white/20 tabular-nums shrink-0">
+                  {section.metric.split(' | ')[0]}
+                </span>
+              )}
             </button>
           )
         })}
       </div>
 
-      <div className="platform-rail__footer">
-        <span className="platform-rail__badge">PWA installabile</span>
-        <span className="platform-rail__badge">Privacy per profilo</span>
-        <span className="platform-rail__badge">AI separata per persona</span>
+      {/* Footer */}
+      <div className="px-4 pt-4 border-t border-white/[0.06] mt-4 shrink-0">
+        <p className="text-[10px] text-white/20 leading-relaxed">
+          PWA · Privacy per profilo
+          <br />
+          AI separata · GPT-5.4
+        </p>
       </div>
     </nav>
   )
