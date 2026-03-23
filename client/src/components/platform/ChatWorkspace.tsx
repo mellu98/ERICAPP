@@ -142,7 +142,7 @@ export function ChatWorkspace({
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Mobile tab bar */}
-      <div className="md:hidden flex shrink-0 border-b border-white/[0.07] bg-[rgba(7,7,17,0.6)]">
+      <div className="md:hidden flex shrink-0 border-b border-white/[0.08] bg-[rgba(7,7,17,0.85)] backdrop-blur-sm">
         {(
           [
             { id: 'chat' as const, label: 'Chat', icon: MessageCircle },
@@ -155,13 +155,13 @@ export function ChatWorkspace({
             type="button"
             onClick={() => setMobileTab(tab.id)}
             className={cn(
-              'flex items-center justify-center gap-1.5 flex-1 py-2.5 text-[11px] font-bold uppercase tracking-widest transition-all border-b-2',
+              'flex items-center justify-center gap-2 flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all border-b-2',
               mobileTab === tab.id
                 ? 'text-[#00d4aa] border-[#00d4aa]'
                 : 'text-white/25 border-transparent hover:text-white/50',
             )}
           >
-            <tab.icon className="w-3.5 h-3.5" />
+            <tab.icon className="w-3.5 h-3.5 shrink-0" />
             {tab.label}
           </button>
         ))}
@@ -199,7 +199,7 @@ export function ChatWorkspace({
           {/* Messages */}
           <div
             ref={messagesRef}
-            className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
+            className="flex-1 overflow-y-auto px-3 py-5 space-y-5"
           >
             {thread.messages.map((message) => (
               <ChatBubble key={message.id} message={message} profile={profile} />
@@ -216,7 +216,7 @@ export function ChatWorkspace({
           ) : null}
 
           {/* Composer */}
-          <div className="shrink-0 p-3 border-t border-white/[0.07] bg-[rgba(7,7,17,0.4)]">
+          <div className="shrink-0 px-3 py-2.5 border-t border-white/[0.08] bg-[rgba(7,7,17,0.6)] backdrop-blur-sm">
             <form onSubmit={handleSubmit}>
               <div className="relative">
                 <textarea
@@ -224,20 +224,20 @@ export function ChatWorkspace({
                   onChange={(e) => setDraft(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder={`Scrivi a ${profile.name}… o allega un referto`}
-                  rows={3}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl px-4 pt-3 pb-11 text-sm text-[#eae8f2] placeholder-white/20 resize-none focus:outline-none focus:border-[rgba(0,212,170,0.35)] focus:bg-white/[0.06] transition-all leading-relaxed"
+                  rows={2}
+                  className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-3.5 pt-2.5 pb-10 text-sm text-[#eae8f2] placeholder-white/25 resize-none focus:outline-none focus:border-[rgba(0,212,170,0.4)] focus:bg-white/[0.07] transition-all leading-relaxed"
                 />
 
                 {/* Inline action bar */}
-                <div className="absolute bottom-2.5 left-3 right-3 flex items-center gap-2">
+                <div className="absolute bottom-2 left-2.5 right-2.5 flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     className={cn(
-                      'flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-lg transition-all max-w-[140px]',
+                      'flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1.5 rounded-lg transition-all max-w-[150px]',
                       selectedFile
-                        ? 'text-[#00d4aa] bg-[rgba(0,212,170,0.1)] border border-[rgba(0,212,170,0.2)]'
-                        : 'text-white/35 hover:text-white/65 hover:bg-white/[0.05] border border-transparent',
+                        ? 'text-[#00d4aa] bg-[rgba(0,212,170,0.12)] border border-[rgba(0,212,170,0.25)]'
+                        : 'text-white/40 hover:text-white/65 hover:bg-white/[0.06] border border-white/[0.06]',
                     )}
                     title="Allega PDF o immagine"
                   >
@@ -247,12 +247,12 @@ export function ChatWorkspace({
                     </span>
                   </button>
 
-                  <div className="ml-auto flex items-center gap-1.5">
+                  <div className="ml-auto flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => void onRefreshReport()}
                       disabled={thread.isRefreshingReport || thread.isSending}
-                      className="text-[11px] text-white/30 hover:text-white/60 disabled:opacity-30 disabled:cursor-not-allowed px-2 py-1 rounded-lg hover:bg-white/[0.05] transition-all"
+                      className="text-[11px] text-white/35 hover:text-white/65 disabled:opacity-30 disabled:cursor-not-allowed px-2.5 py-1.5 rounded-lg border border-white/[0.06] hover:bg-white/[0.05] transition-all"
                     >
                       {thread.isRefreshingReport ? 'Aggiorno...' : 'Aggiorna report'}
                     </button>
@@ -260,7 +260,7 @@ export function ChatWorkspace({
                     <button
                       type="submit"
                       disabled={thread.isSending || (!draft.trim() && !selectedFile)}
-                      className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#00d4aa] text-[#070711] text-xs font-bold hover:bg-[#00c49e] active:scale-95 disabled:opacity-35 disabled:cursor-not-allowed transition-all shadow-md shadow-[rgba(0,212,170,0.2)]"
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#00d4aa] text-[#070711] text-xs font-bold hover:bg-[#00c49e] active:scale-95 disabled:opacity-35 disabled:cursor-not-allowed transition-all shadow-lg shadow-[rgba(0,212,170,0.25)]"
                     >
                       {thread.isSending ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -311,42 +311,47 @@ function ChatBubble({ message, profile }: { message: ChatMessage; profile: Perso
   const isUser = message.role === 'user'
 
   return (
-    <article className={cn('flex gap-3 msg-appear', isUser ? 'flex-row-reverse' : 'flex-row')}>
+    <article className={cn('flex gap-2.5 msg-appear', isUser ? 'flex-row-reverse' : 'flex-row')}>
       {/* Avatar */}
       <div
         className={cn(
-          'w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold mt-0.5',
+          'w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold mt-1',
           isUser
-            ? 'bg-white/[0.08] border border-white/[0.12] text-white/60'
-            : 'bg-[rgba(0,212,170,0.15)] border border-[rgba(0,212,170,0.25)] text-[#00d4aa]',
+            ? 'bg-white/[0.07] border border-white/[0.1] text-white/50'
+            : 'bg-[rgba(0,212,170,0.12)] border border-[rgba(0,212,170,0.22)] text-[#00d4aa]',
         )}
       >
         {isUser ? 'Tu' : 'AI'}
       </div>
 
       {/* Bubble */}
-      <div className={cn('flex flex-col max-w-[75%]', isUser ? 'items-end' : 'items-start')}>
+      <div
+        className={cn(
+          'flex flex-col',
+          isUser ? 'items-end max-w-[72%]' : 'items-start max-w-[86%]',
+        )}
+      >
         <div
           className={cn(
             'px-4 py-3 rounded-2xl border',
             isUser
-              ? 'rounded-tr-sm bg-[rgba(0,212,170,0.1)] border-[rgba(0,212,170,0.2)]'
-              : 'rounded-tl-sm bg-white/[0.04] border-white/[0.08]',
+              ? 'rounded-tr-sm bg-[rgba(0,212,170,0.09)] border-[rgba(0,212,170,0.18)]'
+              : 'rounded-tl-sm bg-white/[0.04] border-white/[0.09]',
           )}
         >
           {!isUser && (
-            <p className="text-[11px] font-bold text-[#00d4aa] mb-1.5 leading-none">
+            <p className="text-[10px] font-bold text-[#00d4aa] mb-2 uppercase tracking-wider leading-none">
               {profile.assistantName}
             </p>
           )}
 
-          <p className="text-sm text-[#eae8f2] leading-relaxed whitespace-pre-wrap">
+          <p className="text-[13px] text-[#eae8f2] leading-relaxed whitespace-pre-wrap">
             {message.content}
           </p>
 
           {/* Attachment */}
           {message.attachment ? (
-            <div className="mt-3 px-3 py-2 rounded-xl bg-white/[0.06] border border-white/[0.09]">
+            <div className="mt-3 px-3 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1]">
               <p className="text-[11px] font-bold text-[#eae8f2] truncate">
                 {message.attachment.filename}
               </p>
@@ -382,12 +387,12 @@ function ChatBubble({ message, profile }: { message: ChatMessage; profile: Perso
 
 function InlineList({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="pt-2 border-t border-white/[0.07]">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-1.5">{title}</p>
-      <ul className="space-y-1">
+    <div className="pt-2.5 mt-0.5 border-t border-white/[0.1]">
+      <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35 mb-2">{title}</p>
+      <ul className="space-y-1.5">
         {items.map((item) => (
-          <li key={item} className="flex items-start gap-1.5 text-[11px] text-white/50">
-            <span className="w-1 h-1 rounded-full bg-white/20 shrink-0 mt-1.5" />
+          <li key={item} className="flex items-start gap-2 text-[11px] text-white/55 leading-snug">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#00d4aa]/30 shrink-0 mt-1" />
             {item}
           </li>
         ))}
