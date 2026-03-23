@@ -1,17 +1,11 @@
-import type { ReactNode } from 'react'
-import type { PlatformPwaState, PlatformSyncState } from './PlatformShell'
-
-export type TopbarAction = {
-  label: string
-  onClick?: () => void
-  icon?: ReactNode
-  tone?: 'primary' | 'secondary'
-}
+import { Paperclip, RefreshCw } from 'lucide-react'
+import { cn } from '../../lib/utils'
+import type { PlatformPwaState, PlatformSectionTone, PlatformSyncState } from './PlatformShell'
 
 export type TopbarProps = {
   appName: string
-  appSubtitle: string
   activeSectionName: string
+  activeSectionTone: PlatformSectionTone
   connectionLabel: string
   pwaState: PlatformPwaState
   syncState: PlatformSyncState
@@ -23,86 +17,87 @@ export type TopbarProps = {
   secondaryActionLabel: string
 }
 
-const pwaLabelMap: Record<PlatformPwaState, string> = {
-  installed: 'Installata',
-  installable: 'Installabile',
-  browser: 'Nel browser',
-}
-
-const syncLabelMap: Record<PlatformSyncState, string> = {
-  ready: 'Sincronizzata',
-  syncing: 'Sincronizzazione',
-  offline: 'Offline',
+const toneDotStyle: Record<PlatformSectionTone, string> = {
+  teal: 'bg-[#00d4aa]',
+  amber: 'bg-[#f5a623]',
+  rose: 'bg-[#f43f5e]',
+  slate: 'bg-white/30',
 }
 
 export function Topbar({
-  appName,
-  appSubtitle,
-  activeSectionName,
   connectionLabel,
-  pwaState,
   syncState,
-  statusLabel,
-  syncLabel,
+  activeSectionName,
+  activeSectionTone,
   onPrimaryAction,
   onSecondaryAction,
   primaryActionLabel,
   secondaryActionLabel,
 }: TopbarProps) {
+  const isSyncing = syncState === 'syncing'
+  const isOffline = syncState === 'offline'
+
   return (
-    <header className="platform-topbar">
-      <div className="platform-topbar__identity">
-        <div className="platform-topbar__brand">
-          <span className="platform-topbar__logo" aria-hidden="true">
-            ER
-          </span>
-          <div>
-            <p className="platform-topbar__eyebrow">Family health platform</p>
-            <h1 className="platform-topbar__title">{appName}</h1>
+    <header className="flex items-center justify-between h-14 px-4 border-b border-white/[0.07] bg-[rgba(7,7,17,0.92)] backdrop-blur-xl shrink-0 z-20">
+      {/* Left: identity */}
+      <div className="flex items-center gap-3">
+        {/* Logo — visible only on mobile (desktop shows it in sidebar) */}
+        <div className="md:hidden w-8 h-8 rounded-lg bg-gradient-to-br from-[#00d4aa] to-[#007a62] flex items-center justify-center text-[#070711] font-black text-[11px] shadow-md shadow-[rgba(0,212,170,0.2)] shrink-0">
+          ER
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <span className={cn('w-2 h-2 rounded-full shrink-0', toneDotStyle[activeSectionTone])} />
+            <p className="font-bold text-sm text-[#eae8f2] leading-none">{activeSectionName}</p>
           </div>
+          <p className="text-[11px] text-white/30 mt-0.5 hidden sm:block">{connectionLabel}</p>
         </div>
-        <p className="platform-topbar__subtitle">{appSubtitle}</p>
       </div>
 
-      <div className="platform-topbar__center">
-        <span className="platform-topbar__crumb">Sezione attiva</span>
-        <strong className="platform-topbar__section">{activeSectionName}</strong>
-        <p className="platform-topbar__sectionNote">
-          {statusLabel} - {syncLabel}
-        </p>
-      </div>
+      {/* Right: status + actions */}
+      <div className="flex items-center gap-2">
+        {/* Sync pill */}
+        <span
+          className={cn(
+            'hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors',
+            isSyncing
+              ? 'bg-[rgba(245,166,35,0.1)] text-[#f5a623] border-[rgba(245,166,35,0.2)]'
+              : isOffline
+                ? 'bg-[rgba(244,63,94,0.1)] text-[#f43f5e] border-[rgba(244,63,94,0.2)]'
+                : 'bg-[rgba(0,212,170,0.07)] text-[#00d4aa] border-[rgba(0,212,170,0.16)]',
+          )}
+          aria-live="polite"
+        >
+          <span
+            className={cn(
+              'w-1.5 h-1.5 rounded-full',
+              isSyncing ? 'bg-[#f5a623] animate-pulse' : isOffline ? 'bg-[#f43f5e]' : 'bg-[#00d4aa]',
+            )}
+          />
+          {isSyncing ? 'Elaborando...' : isOffline ? 'Offline' : 'Pronto'}
+        </span>
 
-      <div className="platform-topbar__right">
-        <div className="platform-topbar__statusRow" aria-live="polite">
-          <span className="platform-topbar__status" data-tone="slate">
-            {connectionLabel}
-          </span>
-          <span className="platform-topbar__status" data-tone={pwaState}>
-            {pwaLabelMap[pwaState]}
-          </span>
-          <span className="platform-topbar__status" data-tone={syncState}>
-            {syncLabelMap[syncState]}
-          </span>
-        </div>
+        {/* Refresh report */}
+        <button
+          type="button"
+          onClick={onSecondaryAction}
+          disabled={!onSecondaryAction}
+          title={secondaryActionLabel}
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-white/40 hover:text-white/75 hover:bg-white/[0.06] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <RefreshCw className="w-4 h-4" />
+        </button>
 
-        <div className="platform-topbar__actions">
-          <button
-            type="button"
-            className="platform-topbar__button is-secondary"
-            onClick={onSecondaryAction}
-            disabled={!onSecondaryAction}
-          >
-            {secondaryActionLabel}
-          </button>
-          <button
-            type="button"
-            className="platform-topbar__button is-primary"
-            onClick={onPrimaryAction}
-            disabled={!onPrimaryAction}
-          >
-            {primaryActionLabel}
-          </button>
-        </div>
+        {/* Upload */}
+        <button
+          type="button"
+          onClick={onPrimaryAction}
+          disabled={!onPrimaryAction}
+          className="flex items-center gap-1.5 px-3 h-8 rounded-lg bg-[#00d4aa] text-[#070711] text-xs font-bold hover:bg-[#00c49e] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-[rgba(0,212,170,0.25)]"
+        >
+          <Paperclip className="w-3.5 h-3.5" />
+          <span className="hidden sm:block">{primaryActionLabel}</span>
+        </button>
       </div>
     </header>
   )
