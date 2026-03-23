@@ -38,7 +38,7 @@ export function Topbar({
   const isOffline = syncState === 'offline'
 
   return (
-    <header className="flex items-center justify-between h-14 px-4 border-b border-white/[0.07] bg-[rgba(7,7,17,0.92)] backdrop-blur-xl shrink-0 z-20">
+    <header className="flex items-center justify-between h-12 px-4 border-b border-white/[0.08] bg-[rgba(7,7,17,0.95)] backdrop-blur-xl shrink-0 z-20">
       {/* Left: identity */}
       <div className="flex items-center gap-3">
         {/* Logo — visible only on mobile (desktop shows it in sidebar) */}
