@@ -200,7 +200,7 @@ export function ChatWorkspace({
           {/* Messages */}
           <div
             ref={messagesRef}
-            className="flex-1 overflow-y-auto px-3 py-5 space-y-5"
+            className="flex-1 overflow-y-auto px-3 py-3 space-y-1"
           >
             {thread.messages.map((message) => (
               <ChatBubble key={message.id} message={message} profile={profile} />
@@ -217,7 +217,7 @@ export function ChatWorkspace({
           ) : null}
 
           {/* Composer */}
-          <div className="shrink-0 px-3 py-2.5 border-t border-white/[0.08] bg-[rgba(7,7,17,0.6)] backdrop-blur-sm">
+          <div className="shrink-0 px-2 py-2 bg-[#0b0b1a]">
             <form onSubmit={handleSubmit}>
               <div className="relative">
                 <textarea
@@ -312,92 +312,72 @@ function ChatBubble({ message, profile }: { message: ChatMessage; profile: Perso
   const isUser = message.role === 'user'
 
   return (
-    <article className={cn('flex gap-2.5 msg-appear', isUser ? 'flex-row-reverse' : 'flex-row')}>
-      {/* Avatar */}
+    <div className={cn('flex flex-col msg-appear', isUser ? 'items-end' : 'items-start')}>
       <div
         className={cn(
-          'w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold mt-1',
+          'relative px-3 py-2 rounded-xl max-w-[78%]',
           isUser
-            ? 'bg-white/[0.07] border border-white/[0.1] text-white/50'
-            : 'bg-[rgba(0,212,170,0.12)] border border-[rgba(0,212,170,0.22)] text-[#00d4aa]',
+            ? 'bg-[#005c4b] rounded-tr-[4px]'
+            : 'bg-[#1a1a2e] rounded-tl-[4px]',
         )}
       >
-        {isUser ? 'Tu' : 'AI'}
+        <p className="text-[14.5px] text-[#e9edef] leading-[1.45] whitespace-pre-wrap">
+          {message.content}
+        </p>
+
+        {/* Attachment */}
+        {message.attachment ? (
+          <div className="mt-2 px-2.5 py-2 rounded-lg bg-white/[0.08]">
+            <p className="text-[12px] font-semibold text-[#e9edef] truncate">
+              {message.attachment.filename}
+            </p>
+            <p className="text-[11px] text-white/50 mt-0.5 leading-snug line-clamp-2">
+              {message.attachment.summary}
+            </p>
+          </div>
+        ) : null}
+
+        {/* Timestamp inside bubble */}
+        <div className={cn('flex items-center gap-1 mt-1', isUser ? 'justify-end' : 'justify-start')}>
+          <time
+            className="text-[10.5px] text-white/30 leading-none"
+            dateTime={message.createdAt}
+          >
+            {formatTime(message.createdAt)}
+          </time>
+        </div>
       </div>
 
-      {/* Bubble */}
-      <div
-        className={cn(
-          'flex flex-col',
-          isUser ? 'items-end max-w-[72%]' : 'items-start max-w-[86%]',
-        )}
-      >
-        <div
-          className={cn(
-            'px-4 py-3 rounded-2xl border',
-            isUser
-              ? 'rounded-tr-sm bg-[rgba(0,212,170,0.09)] border-[rgba(0,212,170,0.18)]'
-              : 'rounded-tl-sm bg-white/[0.04] border-white/[0.09]',
-          )}
-        >
-          {!isUser && (
-            <p className="text-[10px] font-bold text-[#00d4aa] mb-2 uppercase tracking-wider leading-none">
-              {profile.assistantName}
-            </p>
-          )}
-
-          <p className="text-[13px] text-[#eae8f2] leading-relaxed whitespace-pre-wrap">
-            {message.content}
-          </p>
-
-          {/* Attachment */}
-          {message.attachment ? (
-            <div className="mt-3 px-3 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.1]">
-              <p className="text-[11px] font-bold text-[#eae8f2] truncate">
-                {message.attachment.filename}
-              </p>
-              <p className="text-[11px] text-white/45 mt-1 leading-relaxed line-clamp-2">
-                {message.attachment.summary}
-              </p>
-            </div>
+      {/* Signals + next steps — shown as compact labels below AI bubble */}
+      {!isUser && (message.keySignals?.length || message.nextSteps?.length) ? (
+        <div className="mt-1 max-w-[78%] space-y-1">
+          {message.keySignals?.length ? (
+            <SignalChips label="SEGNALI" items={message.keySignals} />
           ) : null}
-
-          {/* Signals + next steps */}
-          {!isUser && (message.keySignals?.length || message.nextSteps?.length) ? (
-            <div className="mt-3 space-y-2">
-              {message.keySignals?.length ? (
-                <InlineList title="Segnali" items={message.keySignals} />
-              ) : null}
-              {message.nextSteps?.length ? (
-                <InlineList title="Passi successivi" items={message.nextSteps} />
-              ) : null}
-            </div>
+          {message.nextSteps?.length ? (
+            <SignalChips label="PROSSIMI PASSI" items={message.nextSteps} />
           ) : null}
         </div>
-
-        <time
-          className="text-[10px] text-white/20 mt-1 px-1"
-          dateTime={message.createdAt}
-        >
-          {formatDateTime(message.createdAt)}
-        </time>
-      </div>
-    </article>
+      ) : null}
+    </div>
   )
 }
 
-function InlineList({ title, items }: { title: string; items: string[] }) {
+function SignalChips({ label, items }: { label: string; items: string[] }) {
   return (
-    <div className="pt-2.5 mt-0.5 border-t border-white/[0.1]">
-      <p className="text-[9px] font-black uppercase tracking-[0.12em] text-white/35 mb-2">{title}</p>
-      <ul className="space-y-1.5">
+    <div className="px-1">
+      <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-white/25 mb-1">{label}</p>
+      <div className="flex flex-wrap gap-1">
         {items.map((item) => (
-          <li key={item} className="flex items-start gap-2 text-[11px] text-white/55 leading-snug">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#00d4aa]/30 shrink-0 mt-1" />
+          <span
+            key={item}
+            className="inline-flex items-center gap-1 text-[11px] text-white/50 leading-snug bg-white/[0.05] rounded-md px-2 py-0.5"
+          >
+            <span className="w-1 h-1 rounded-full bg-[#00d4aa]/40 shrink-0" />
             {item}
-          </li>
+          </span>
         ))}
-      </ul>
+      </div>
     </div>
   )
 }
@@ -406,14 +386,10 @@ function InlineList({ title, items }: { title: string; items: string[] }) {
    Typing Indicator
 ───────────────────────────────────────── */
 
-function TypingIndicator({ assistantName }: { assistantName: string }) {
+function TypingIndicator({ assistantName: _assistantName }: { assistantName: string }) {
   return (
-    <div className="flex gap-3 items-start">
-      <div className="w-7 h-7 rounded-full bg-[rgba(0,212,170,0.15)] border border-[rgba(0,212,170,0.25)] flex items-center justify-center shrink-0 text-[#00d4aa] text-[10px] font-bold">
-        AI
-      </div>
-      <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl rounded-tl-sm px-4 py-3">
-        <p className="text-[11px] font-bold text-[#00d4aa] mb-2 leading-none">{assistantName}</p>
+    <div className="flex flex-col items-start">
+      <div className="bg-[#1a1a2e] rounded-xl rounded-tl-[4px] px-4 py-3">
         <div className="flex items-center gap-1.5">
           <span className="typing-dot w-1.5 h-1.5 rounded-full bg-white/40" />
           <span className="typing-dot w-1.5 h-1.5 rounded-full bg-white/40" />
@@ -619,6 +595,13 @@ function formatDateTime(value: string) {
   return new Intl.DateTimeFormat('it-IT', {
     day: '2-digit',
     month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value))
+}
+
+function formatTime(value: string) {
+  return new Intl.DateTimeFormat('it-IT', {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(value))
