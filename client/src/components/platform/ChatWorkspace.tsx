@@ -203,7 +203,7 @@ export function ChatWorkspace({
             className="flex-1 overflow-y-auto px-3 py-3 space-y-1"
           >
             {thread.messages.map((message) => (
-              <ChatBubble key={message.id} message={message} profile={profile} />
+              <ChatBubble key={message.id} message={message} />
             ))}
             {thread.isSending && <TypingIndicator assistantName={profile.assistantName} />}
           </div>
@@ -308,7 +308,7 @@ export function ChatWorkspace({
    Chat Bubble
 ───────────────────────────────────────── */
 
-function ChatBubble({ message, profile }: { message: ChatMessage; profile: PersonProfile }) {
+function ChatBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === 'user'
 
   return (
