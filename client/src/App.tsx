@@ -58,7 +58,6 @@ function App() {
     file?: File | null
   }) {
     const profile = activeProfile
-    const currentThread = threads[profile.id] ?? createInitialThreadState()[profile.id]
 
     const userMessage: ChatMessage = {
       id: createId('user'),
@@ -67,22 +66,27 @@ function App() {
       createdAt: new Date().toISOString(),
     }
 
-    setThreads((current) => ({
-      ...current,
-      [profile.id]: {
-        ...currentThread,
-        messages: [...currentThread.messages, userMessage],
+    // Capture the thread snapshot for the API call after the optimistic update
+    let threadForApi: PersonThreadState | null = null
+
+    setThreads((current) => {
+      const prev = current[profile.id] ?? createInitialThreadState()[profile.id]
+      const updated = {
+        ...prev,
+        messages: [...prev.messages, userMessage],
         isSending: true,
         error: null,
-      },
-    }))
+      }
+      threadForApi = updated
+      return { ...current, [profile.id]: updated }
+    })
 
     try {
       const response = await sendProfileChat({
         profile: profile.name,
         message: payload.text,
-        history: toPayloadMessages([...currentThread.messages, userMessage]),
-        documents: currentThread.documents,
+        history: toPayloadMessages(threadForApi!.messages),
+        documents: threadForApi!.documents,
         file: payload.file,
       })
 
@@ -101,34 +105,43 @@ function App() {
         nextSteps: response.assistant.nextSteps,
       }
 
-      const nextThread: PersonThreadState = {
-        ...currentThread,
-        messages: [...currentThread.messages, userMessage, assistantMessage],
-        documents: documentRecord
-          ? [...currentThread.documents, documentRecord]
-          : currentThread.documents,
-        isSending: false,
-        isRefreshingReport: false,
-        error: null,
-        report: currentThread.report,
-      }
+      setThreads((current) => {
+        const prev = current[profile.id] ?? createInitialThreadState()[profile.id]
+        return {
+          ...current,
+          [profile.id]: {
+            ...prev,
+            messages: [...prev.messages, assistantMessage],
+            documents: documentRecord
+              ? [...prev.documents, documentRecord]
+              : prev.documents,
+            isSending: false,
+            error: null,
+          },
+        }
+      })
 
-      setThreads((current) => ({
-        ...current,
-        [profile.id]: nextThread,
-      }))
+      // Read the latest thread for the report refresh
+      const latestThread = await new Promise<PersonThreadState>((resolve) => {
+        setThreads((current) => {
+          resolve(current[profile.id])
+          return current
+        })
+      })
 
-      await refreshReportForProfile(profile.id, nextThread)
+      await refreshReportForProfile(profile.id, latestThread)
     } catch (error) {
-      setThreads((current) => ({
-        ...current,
-        [profile.id]: {
-          ...currentThread,
-          messages: [...currentThread.messages, userMessage],
-          isSending: false,
-          error: error instanceof Error ? error.message : 'Errore durante l invio.',
-        },
-      }))
+      setThreads((current) => {
+        const prev = current[profile.id] ?? createInitialThreadState()[profile.id]
+        return {
+          ...current,
+          [profile.id]: {
+            ...prev,
+            isSending: false,
+            error: error instanceof Error ? error.message : 'Errore durante l invio.',
+          },
+        }
+      })
     }
   }
 
@@ -152,14 +165,17 @@ function App() {
       return
     }
 
-    setThreads((current) => ({
-      ...current,
-      [profileId]: {
-        ...thread,
-        isRefreshingReport: true,
-        error: null,
-      },
-    }))
+    setThreads((current) => {
+      const prev = current[profileId] ?? thread
+      return {
+        ...current,
+        [profileId]: {
+          ...prev,
+          isRefreshingReport: true,
+          error: null,
+        },
+      }
+    })
 
     try {
       const report = await fetchSituationReport({
@@ -168,24 +184,30 @@ function App() {
         documents: thread.documents,
       })
 
-      setThreads((current) => ({
-        ...current,
-        [profileId]: {
-          ...thread,
-          report,
-          isRefreshingReport: false,
-          error: null,
-        },
-      }))
+      setThreads((current) => {
+        const prev = current[profileId] ?? thread
+        return {
+          ...current,
+          [profileId]: {
+            ...prev,
+            report,
+            isRefreshingReport: false,
+            error: null,
+          },
+        }
+      })
     } catch (error) {
-      setThreads((current) => ({
-        ...current,
-        [profileId]: {
-          ...thread,
-          isRefreshingReport: false,
-          error: error instanceof Error ? error.message : 'Errore nel report.',
-        },
-      }))
+      setThreads((current) => {
+        const prev = current[profileId] ?? thread
+        return {
+          ...current,
+          [profileId]: {
+            ...prev,
+            isRefreshingReport: false,
+            error: error instanceof Error ? error.message : 'Errore nel report.',
+          },
+        }
+      })
     }
   }
 
